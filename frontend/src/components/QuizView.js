@@ -36,6 +36,7 @@ class QuizView extends Component {
 
   selectCategory = ({ type, id = 0 }) => {
     this.setState({ quizCategory: { type, id } }, this.getNextQuestion);
+    console.log(id)
   };
 
   handleChange = (event) => {
@@ -108,6 +109,8 @@ class QuizView extends Component {
             ALL
           </div>
           {Object.keys(this.state.categories).map((id) => {
+              {console.log(this.state.categories[id])}
+
             return (
               <div
                 key={id}
@@ -121,6 +124,7 @@ class QuizView extends Component {
               </div>
             );
           })}
+          
         </div>
       </div>
     );
