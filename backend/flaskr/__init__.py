@@ -223,15 +223,23 @@ def create_app(test_config=None):
     def get_next_questions():
         previous_questions = request.json['previous_questions']
         quiz_category = request.json['quiz_category']
+        category_id = quiz_category['id']
         try:
-            if quiz_category['id'] == 0:
-                question = Question.query.filter(~Question.id.in_(
-                    previous_questions)).order_by(func.random()).first().format()
+            if category_id == 0:
+                questions = Question.query.all()
+                if len(previous_questions) == len(questions):
+                    question = False
+                else:
+                    question = Question.query.filter(~Question.id.in_(
+                        previous_questions)).order_by(func.random()).first().format()
             else:
-                category_id = quiz_category['id']
-                question = Question.query.filter(~Question.id.in_(
-                    previous_questions), Question.category == category_id).order_by(func.random()).first().format()
-
+                questions = Question.query.filter(
+                    Question.category == category_id).all()
+                if len(previous_questions) == len(questions):
+                    question = False
+                else:
+                    question = Question.query.filter(~Question.id.in_(
+                        previous_questions), Question.category == category_id).order_by(func.random()).first().format()
             return jsonify({
                 'previous_questions': previous_questions,
                 'quiz_category': quiz_category,
