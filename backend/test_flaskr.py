@@ -62,6 +62,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['categories'])
         self.assertTrue(data['total_categories'])
 
+    def test_get_categories_not_found(self):
+        res = self.client().post('/categories')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 405)
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Method Not Allowed')
+
     def test_delete_question(self):
         res = self.client().delete('questions/19')
         data = json.loads(res.data)
@@ -84,6 +92,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['questions'])
         self.assertTrue(data['total_questions'])
 
+    def test_search_questions_get(self):
+        res = self.client().patch('/questions')
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 405)
+
+        self.assertEqual(data['success'], False)
+        self.assertEqual(data['message'], 'Method Not Allowed')
+
     def test_get_questions_in_category(self):
         res = self.client().get('/categories/1/questions')
         data = json.loads(res.data)
@@ -93,7 +109,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(data['total_questions'])
         self.assertTrue(data['current_category'])
 
-    def test_404_beyond_valid_get_quesitons_category(self):
+    def test_404_beyond_valid_get_questions_category(self):
         res = self.client().get('/categories/8/questions')
         data = json.loads(res.data)
 
@@ -120,7 +136,7 @@ class TriviaTestCase(unittest.TestCase):
 
     def test_404_get_quizzes_category(self):
         res = self.client().post(
-            '/quizzes', json={'quiz_category': {'id': 10}, 'previous_questions': []})
+            '/quizzes', json={'quiz_category': {'id': 40}, 'previous_questions': []})
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 404)
@@ -137,6 +153,18 @@ class TriviaTestCase(unittest.TestCase):
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
+
+    def test_post_new_question_422(self):
+        res = self.client().post('/newquestion', json={
+            'answer': 23324,
+            'question': 43534,
+            'category': 53435,
+            'difficulty': '645654'
+        })
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data['success'], False)
     """
     TODO
     Write at least one test for each test for successful operation and for expected errors.

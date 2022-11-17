@@ -42,7 +42,6 @@ def create_app(test_config=None):
     def get_categories():
         try:
             categories = Category.query.all()
-
             category_ids = [category.id for category in categories]
             category_types = [category.type for category in categories]
             formatted_categories = {}
@@ -59,7 +58,7 @@ def create_app(test_config=None):
             })
 
         except:
-            abort(404)
+            abort(405)
 
     """
     @TODO:
@@ -170,7 +169,6 @@ def create_app(test_config=None):
     def search_questions():
         search_term = request.json['searchTerm']
         try:
-
             questions = Question.query.filter(
                 Question.question.ilike(f'%{search_term}%')).all()
             formatted_questions = [question.format() for question in questions]
@@ -225,6 +223,7 @@ def create_app(test_config=None):
         quiz_category = request.json['quiz_category']
         category_id = quiz_category['id']
         try:
+
             if category_id == 0:
                 questions = Question.query.all()
                 if len(previous_questions) == len(questions):
@@ -233,6 +232,10 @@ def create_app(test_config=None):
                     question = Question.query.filter(~Question.id.in_(
                         previous_questions)).order_by(func.random()).first().format()
             else:
+                exists = Category.query.filter(
+                    Category.id == category_id).one_or_none()
+                if exists is None:
+                    abort(404)
                 questions = Question.query.filter(
                     Question.category == category_id).all()
                 if len(previous_questions) == len(questions):
@@ -266,7 +269,7 @@ def create_app(test_config=None):
         return jsonify({
             "success": False,
             "error": 422,
-            "message": "unprocessable"
+            "message": "Unprocessable"
         }), 422
 
     @app.errorhandler(400)
@@ -274,7 +277,7 @@ def create_app(test_config=None):
         return jsonify({
             "success": False,
             "error": 400,
-            "message": "unprocessable"
+            "message": "Bad Request"
         }), 400
 
     @app.errorhandler(500)
@@ -282,7 +285,15 @@ def create_app(test_config=None):
         return jsonify({
             "success": False,
             "error": 500,
-            "message": "unprocessable"
+            "message": "Server Error"
         }), 500
+
+    @app.errorhandler(405)
+    def server_error(error):
+        return jsonify({
+            "success": False,
+            "error": 405,
+            "message": "Method Not Allowed"
+        }), 405
 
     return app
